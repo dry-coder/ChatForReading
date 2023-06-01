@@ -31,6 +31,7 @@ using OpenAI;
 using OpenAI.Completions;
 using OpenAI.Embeddings;
 using OpenAI.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Chat.Web.Controllers
 {
@@ -85,10 +86,13 @@ namespace Chat.Web.Controllers
         }
 
         
-        const string OPENAPI_TOKEN = "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";//输入自己的api-key
+        const string OPENAPI_TOKEN = "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";//输入自己的api-key
         private static OpenAI.OpenAIClient? Api;
         private const double HighSimilarityThreshold = 0.8;
         private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings";
+
+        private const string SumFolder = "wwwroot/uploads/SumFolder";
+        private const string RecordFolder = "wwwroot/uploads/RecordFolder";
 
         [HttpPost]
         public async Task<ActionResult<Message>> Create(MessageViewModel viewModel)
@@ -153,7 +157,7 @@ namespace Chat.Web.Controllers
                     .ToList();
 
                 // Build the context from all highly similar documents
-                const int maxChars = 8192;
+                const int maxChars = 800;
                 var contextBuilder = new StringBuilder();
                 var tokenCount = 0;
 
@@ -189,7 +193,7 @@ namespace Chat.Web.Controllers
 
             MatchCollection GptCall = Regex.Matches(msg.Content,RegexCallGpt);
             MatchCollection GptSumBegin = Regex.Matches(msg.Content, RegexCallSumBegin);
-            MatchCollection GptSumEnd = Regex.Matches(msg.Content, RegexCallSumBegin);
+            MatchCollection GptSumEnd = Regex.Matches(msg.Content, RegexCallSumEnd);
 
             if (GptCall.Count > 0)
             {
@@ -212,8 +216,68 @@ namespace Chat.Web.Controllers
                     msg.Content += "[[answer]]:";
                     msg.Content += ss;
                 }
-
             }
+
+            if (GptSumBegin.Count > 0)
+            {
+                int specific = msg.ToRoom.Id;
+                string destination = RecordFolder + "/" + specific + ".txt";
+                string content = msg.FromUser.FullName + ": 会议开始！！" + "\n";
+                System.IO.File.WriteAllText(@destination, content);
+            }
+            else
+            {
+                int specific = msg.ToRoom.Id;
+                string destination = RecordFolder + "/" + specific + ".txt";
+                string content = msg.FromUser.FullName + "::" + msg.Content+"\n";
+                System.IO.File.AppendAllText(@destination, content);
+            }
+
+            if (GptSumEnd.Count > 0)
+            {
+                int specific = msg.ToRoom.Id;
+                string destinationRecord = RecordFolder + "/" + specific + ".txt";
+                string content = msg.FromUser.FullName + ":" + msg.Content;
+
+                //System.IO.File.AppendAllText(@destinationRecord, content);
+
+                string filename = DateTime.Now.ToString("yyyymmddMMss") + "_" + specific + ".txt";
+                string destinationSum = SumFolder + "/" + filename;
+
+
+                string requestStr;
+                requestStr = System.IO.File.ReadAllText(@destinationRecord) + "请总结上面的对话，形成一份会议记录";
+                OpenAIService service = new OpenAIService(new OpenAiOptions() { ApiKey = OPENAPI_TOKEN });
+                CompletionCreateRequest createRequest = new CompletionCreateRequest()
+                {
+
+                    Prompt = requestStr,
+                    Temperature = 0.3f,
+                    MaxTokens = 1000
+                };
+
+                var res = await service.Completions.CreateCompletion(createRequest, OpenAI.GPT3.ObjectModels.Models.TextDavinciV3);
+
+                if (res.Successful)
+                {
+                    ss = res.Choices.FirstOrDefault().Text;
+                    System.IO.File.WriteAllText(@destinationSum, ss);
+
+                    string htmlImage = string.Format(
+                    "<h1>Sum Files</h1><a href=\"/uploads/SumFolder/{0}\" target=\"_blank\">" +
+                    "<img src=\"/uploads/SumFolder/{0}\" class=\"post-image\">" +
+                    "</a>", filename);
+
+                    msg = new Message()
+                    {
+                        Content = Regex.Replace(htmlImage, @"(?i)<(?!img|a|/a|/img).*?>", string.Empty),
+                        Timestamp = DateTime.Now,
+                        FromUser = user,
+                        ToRoom = room
+                    };
+                }
+            }
+
             //--------------------------------------------------------
 
             _context.Messages.Add(msg);

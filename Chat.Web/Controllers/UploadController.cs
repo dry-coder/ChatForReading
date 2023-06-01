@@ -105,8 +105,23 @@ namespace Chat.Web.Controllers
                     "<h1>TXT Files</h1><a href=\"/uploads/{0}\" target=\"_blank\">" +
                     "<img src=\"/uploads/{0}\" class=\"post-image\">" +
                     "</a>", fileName);
+
+                    Api = new OpenAIClient(apiKey, Model.Ada);
+
+                    // Create directory to store embeddings
+                    Directory.CreateDirectory(EmbeddingsFolder);
+
+                    // Get all txt files from the folder
+                    var txtFilesTemp = Directory.GetFiles(InputsFolder, "*.txt");
+
+                    // Process each file
+                    foreach (var filePathTemp in txtFilesTemp)
+                    {
+                        await ProcessFile(filePathTemp);
+                    }
                 }
 
+                /*
                 Api = new OpenAIClient(apiKey, Model.Ada);
 
                 // Create directory to store embeddings
@@ -119,7 +134,8 @@ namespace Chat.Web.Controllers
                 foreach (var filePathTemp in txtFiles)
                 {
                     await ProcessFile(filePathTemp);
-                }
+                }*/
+
 
                 var message = new Message()
                 {
