@@ -88,7 +88,6 @@ namespace Chat.Web.Controllers
         const string OPENAPI_TOKEN = "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";//输入自己的api-key
         private static OpenAI.OpenAIClient? Api;
         private const double HighSimilarityThreshold = 0.8;
-        private const string apiKey = "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";
         private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings";
 
         [HttpPost]
@@ -107,8 +106,9 @@ namespace Chat.Web.Controllers
                 ToRoom = room,
                 Timestamp = DateTime.Now
             };
+
             //------------------------search-----------------------
-            Api = new OpenAIClient(apiKey, OpenAI.Models.Model.Ada);
+            Api = new OpenAIClient(OPENAPI_TOKEN, OpenAI.Models.Model.Ada);
             string RegexCallSearch = @"@search\s*";
             MatchCollection SearchCall = Regex.Matches(msg.Content, RegexCallSearch);
             if (SearchCall.Count > 0)
@@ -184,8 +184,8 @@ namespace Chat.Web.Controllers
 
             //-------------------------gpt--------------------------
             string RegexCallGpt = @"@gpt\s*";
-            string RegexCallSumBegin = @"@gpt_sum_begin\s*";
-            string RegexCallSumEnd = @"@gpt_sum_end\s*";
+            string RegexCallSumBegin = @"@sum_begin\s*";
+            string RegexCallSumEnd = @"@sum_end\s*";
 
             MatchCollection GptCall = Regex.Matches(msg.Content,RegexCallGpt);
             MatchCollection GptSumBegin = Regex.Matches(msg.Content, RegexCallSumBegin);
@@ -209,7 +209,7 @@ namespace Chat.Web.Controllers
                 if (res.Successful)
                 {
                     ss = res.Choices.FirstOrDefault().Text;
-                    msg.Content += "\nchat-gpt 的回答 ： ";
+                    msg.Content += "[[answer]]:";
                     msg.Content += ss;
                 }
 
@@ -225,6 +225,7 @@ namespace Chat.Web.Controllers
 
             return CreatedAtAction(nameof(Get), new { id = msg.Id }, createdMessage);
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -244,6 +245,8 @@ namespace Chat.Web.Controllers
 
             return Ok();
         }
+
+
 
         private static double[] NormalizeVector(double[] vector)
         {

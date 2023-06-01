@@ -2,25 +2,21 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-Chat.Web-8692691F-5FD4-4BB5-A736-D380452CEE04</UserSecretsId>
+    <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Properties\serviceDependencies.local.json" />
+    <Content Remove="compilerconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <_WebToolingArtifacts Remove="properties\serviceDependencies.json" />
-    <_WebToolingArtifacts Remove="Properties\serviceDependencies.local.json" />
+    <_ContentIncludedByDefault Remove="wwwroot\css\site.min.css" />
+    <_ContentIncludedByDefault Remove="wwwroot\css\_content.css" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="properties\serviceDependencies.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Properties\serviceDependencies.local.json" />
+    <None Include="compilerconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +35,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.1" />
     <PackageReference Include="OpenAI-DotNet" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
 </Project>
