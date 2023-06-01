@@ -86,7 +86,7 @@ namespace Chat.Web.Controllers
         }
 
         
-        const string OPENAPI_TOKEN = "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";//输入自己的api-key
+        const string OPENAPI_TOKEN = "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";//输入自己的api-key
         private static OpenAI.OpenAIClient? Api;
         private const double HighSimilarityThreshold = 0.8;
         private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings";
