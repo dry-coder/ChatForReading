@@ -85,6 +85,27 @@ namespace Chat.Web.Controllers
             return Ok(messagesViewModel);
         }
 
+        [HttpGet("File/{roomName}")]
+        public IActionResult GetFiles(string roomName)
+        {
+            var room = _context.Rooms.FirstOrDefault(r => r.Name == roomName);
+            if (room == null)
+                return BadRequest();
+
+            var messages = _context.Messages.Where(m => ((m.ToRoomId == room.Id) && (m.Content.Contains("Files of"))))
+                .Include(m => m.FromUser)
+                .Include(m => m.ToRoom)
+                .OrderByDescending(m => m.Timestamp)
+                .Take(20)
+                .AsEnumerable()
+                .Reverse()
+                .ToList();
+
+            var messagesViewModel = _mapper.Map<IEnumerable<Message>, IEnumerable<MessageViewModel>>(messages);
+
+            return Ok(messagesViewModel);
+        }
+
         
         const string OPENAPI_TOKEN = "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";//输入自己的api-key
         private static OpenAI.OpenAIClient? Api;
@@ -269,7 +290,7 @@ namespace Chat.Web.Controllers
                     System.IO.File.WriteAllText(@destinationSum, ss);
 
                     string htmlImage = string.Format(
-                    "<h1>Sum Files</h1><a href=\"/uploads/SumFolder/{0}\" target=\"_blank\">" +
+                    "<h1>【Files of Sum】" + filename.ToString() + "</h1><a href=\"/uploads/SumFolder/{0}\" target=\"_blank\">" +
                     "<img src=\"/uploads/SumFolder/{0}\" class=\"post-image\">" +
                     "</a>", NowSaveFile + "/" + filename);
 
