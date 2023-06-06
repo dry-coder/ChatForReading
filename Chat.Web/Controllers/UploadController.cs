@@ -35,11 +35,12 @@ namespace Chat.Web.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IFileValidator _fileValidator;
 
-        private const string apiKey = "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";
+        private const string apiKey = "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";
         private static OpenAIClient? Api;
-        private const string InputsFolder = "wwwroot/uploads";
-        private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings";
+        private const string InputsFolder = "wwwroot/uploads/Files/";
+        private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings/";
 
+        public string NowSaveFile;
 
         public UploadController(ApplicationDbContext context,
             IMapper mapper,
@@ -62,6 +63,8 @@ namespace Chat.Web.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload([FromForm] UploadViewModel viewModel)
         {
+            NowSaveFile = viewModel.RoomId.ToString();
+
             if (ModelState.IsValid)
             {
                if (!_fileValidator.IsValid(viewModel.File))
@@ -70,7 +73,7 @@ namespace Chat.Web.Controllers
                 //var fileName = DateTime.Now.ToString("yyyymmddMMss") + "_" + Path.GetFileName(viewModel.File.FileName);
                 var fileName = Path.GetFileName(viewModel.File.FileName);
 
-                var folderPath = Path.Combine(_environment.WebRootPath, "uploads");
+                var folderPath = Path.Combine(_environment.WebRootPath, "uploads/Files/"+NowSaveFile);
                 var filePath = Path.Combine(folderPath, fileName);
                 if (!Directory.Exists(folderPath))
                     Directory.CreateDirectory(folderPath);
@@ -88,36 +91,36 @@ namespace Chat.Web.Controllers
                 var extension = Path.GetExtension(viewModel.File.FileName).ToLowerInvariant();
 
                 string htmlImage = string.Format(
-                    "<a href=\"/uploads/{0}\" target=\"_blank\">" +
-                    "<img src=\"/uploads/{0}\" class=\"post-image\">" +
-                    "</a>", fileName);
+                    "<a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
+                    "<img src=\"/uploads/Files/{0}\" class=\"post-image\">" +
+                    "</a>", NowSaveFile + "/" + fileName);
 
                 if (extension == ".pdf")
                 {
                     htmlImage = string.Format(
-                    "<h1>PDF Files</h1><a href=\"/uploads/{0}\" target=\"_blank\">" +
-                    "<img src=\"/uploads/{0}\" class=\"post-image\">" +
-                    "</a>", fileName);
+                    "<h1>PDF Files</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
+                    "<img src=\"/uploads/Files/{0}\" class=\"post-image\">" +
+                    "</a>", NowSaveFile + "/" + fileName);
                 }
                 if (extension == ".txt")
                 {
                     htmlImage = string.Format(
-                    "<h1>TXT Files</h1><a href=\"/uploads/{0}\" target=\"_blank\">" +
-                    "<img src=\"/uploads/{0}\" class=\"post-image\">" +
-                    "</a>", fileName);
+                    "<h1>TXT Files</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
+                    "<img src=\"/uploads/Files/{0}\" class=\"post-image\">" +
+                    "</a>", NowSaveFile + "/" + fileName);
 
                     Api = new OpenAIClient(apiKey, Model.Ada);
 
                     // Create directory to store embeddings
-                    Directory.CreateDirectory(EmbeddingsFolder);
+                    Directory.CreateDirectory(EmbeddingsFolder + NowSaveFile);
 
                     // Get all txt files from the folder
-                    var txtFilesTemp = Directory.GetFiles(InputsFolder, "*.txt");
+                    var txtFilesTemp = Directory.GetFiles(InputsFolder + NowSaveFile, "*.txt");
 
                     // Process each file
                     foreach (var filePathTemp in txtFilesTemp)
                     {
-                        await ProcessFile(filePathTemp);
+                        await ProcessFile(filePathTemp, EmbeddingsFolder + NowSaveFile);
                     }
                 }
 
@@ -128,7 +131,7 @@ namespace Chat.Web.Controllers
                 Directory.CreateDirectory(EmbeddingsFolder);
 
                 // Get all txt files from the folder
-                var txtFiles = Directory.GetFiles(InputsFolder, "*.txt");
+                var txtFiles = Directory.GetFiles(InputsFolder + NowSaveFile, "*.txt");
 
                 // Process each file
                 foreach (var filePathTemp in txtFiles)
@@ -158,7 +161,8 @@ namespace Chat.Web.Controllers
             return BadRequest();
         }
 
-        private static async Task ProcessFile(string filePath)
+        [HttpPost]
+        private static async Task ProcessFile(string filePath, string embedlocation)
         {
             string input = await System.IO.File.ReadAllTextAsync(filePath);
             string filename = Path.GetFileName(filePath);
@@ -185,7 +189,7 @@ namespace Chat.Web.Controllers
                 partCount++;
             }
 
-            await WriteAllEmbeddingsToFile(filename, embeddingsList);
+            await WriteAllEmbeddingsToFile(filename, embeddingsList, embedlocation);
         }
 
         private static List<string> SplitIntoSections(string text, int maxSectionLength)
@@ -224,7 +228,7 @@ namespace Chat.Web.Controllers
             return sections;
         }
 
-        private static async Task WriteAllEmbeddingsToFile(string filename, List<object> embeddingsList)
+        private static async Task WriteAllEmbeddingsToFile(string filename, List<object> embeddingsList, string embedlocation)
         {
             // Create an object that includes the list of embeddings and the source file name
             var outputObject = new
@@ -235,7 +239,7 @@ namespace Chat.Web.Controllers
 
             // Write the embeddings JSON file with the filename in Embeddings folder
             string jsonFileName = $"embed_{filename}.json";
-            string jsonFilePath = Path.Combine(EmbeddingsFolder, jsonFileName);
+            string jsonFilePath = Path.Combine(embedlocation , jsonFileName);
 
             string json = JsonSerializer.Serialize(outputObject);
             await System.IO.File.WriteAllTextAsync(jsonFilePath, json);

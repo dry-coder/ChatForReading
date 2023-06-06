@@ -72,6 +72,9 @@
         self.myProfile = ko.observable();
         self.isLoading = ko.observable(true);
 
+        /*self.chatFiles = ko.observableArray([]);
+        self.chatSums = ko.observableArray([]);*/
+
         self.showAvatar = ko.computed(function () {
             return self.isLoading() == false && self.myProfile().avatar() != null;
         });
@@ -148,6 +151,10 @@
                 self.joinedRoom(room);
                 self.userList();
                 self.messageHistory();
+
+                /* 增加的 */
+                self.fileHistory();
+                self.sumHistory();
             });
         }
 
@@ -234,6 +241,11 @@
                     $(".messages-container").animate({ scrollTop: $(".messages-container")[0].scrollHeight }, 1000);
                 });
         }
+
+        /* 此处为新增加的功能，即当前房间的文件列表 */
+
+
+        /* 此处为新增加的功能，即当前房间的各个文件*/
 
         self.roomAdded = function (room) {
             self.chatRooms.push(room);

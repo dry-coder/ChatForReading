@@ -86,13 +86,15 @@ namespace Chat.Web.Controllers
         }
 
         
-        const string OPENAPI_TOKEN = "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";//输入自己的api-key
+        const string OPENAPI_TOKEN = "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";//输入自己的api-key
         private static OpenAI.OpenAIClient? Api;
         private const double HighSimilarityThreshold = 0.8;
-        private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings";
+        private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings/";
 
-        private const string SumFolder = "wwwroot/uploads/SumFolder";
-        private const string RecordFolder = "wwwroot/uploads/RecordFolder";
+        private const string SumFolder = "wwwroot/uploads/SumFolder/";
+        private const string RecordFolder = "wwwroot/uploads/RecordFolder/";
+
+        private string NowSaveFile = "";
 
         [HttpPost]
         public async Task<ActionResult<Message>> Create(MessageViewModel viewModel)
@@ -111,6 +113,8 @@ namespace Chat.Web.Controllers
                 Timestamp = DateTime.Now
             };
 
+            NowSaveFile = msg.ToRoom.Id.ToString();
+
             //------------------------search-----------------------
             Api = new OpenAIClient(OPENAPI_TOKEN, OpenAI.Models.Model.Ada);
             string RegexCallSearch = @"@search\s*";
@@ -127,7 +131,7 @@ namespace Chat.Web.Controllers
                 queryVector = NormalizeVector(queryVector); // Normalize the query vector
 
                 // Get all json files from the folder
-                var jsonFiles = Directory.GetFiles(EmbeddingsFolder, "*.json");
+                var jsonFiles = Directory.GetFiles(EmbeddingsFolder + NowSaveFile, "*.json");
                 
                 var documentVectors = new List<double[]>();
                 var documents = new List<string>();
@@ -157,7 +161,7 @@ namespace Chat.Web.Controllers
                     .ToList();
 
                 // Build the context from all highly similar documents
-                const int maxChars = 800;
+                const int maxChars = 8192;
                 var contextBuilder = new StringBuilder();
                 var tokenCount = 0;
 
@@ -179,9 +183,9 @@ namespace Chat.Web.Controllers
                 string completeQuery = @$"The following information is provided for context: \n\n{context} \n\n Given this information, can you please answer the following question: \n\n ""{requestStr}""?";
                 CompletionResult? result = await Api.CompletionsEndpoint.CreateCompletionAsync(completeQuery, model: OpenAI.Models.Model.Davinci, temperature: 0.7, max_tokens: 256);
 
-                context += " [[Judge]]:"+result.ToString().TrimStart();
-                msg.Content += " [[result]]:\n";
-                msg.Content += context;
+                msg.Content += " [[Judge]]:"+result.ToString().TrimStart();
+                /*msg.Content += " [[result]]:\n";
+                msg.Content += context;*/
 
             }
             //-----------------------------------------------------
@@ -221,14 +225,14 @@ namespace Chat.Web.Controllers
             if (GptSumBegin.Count > 0)
             {
                 int specific = msg.ToRoom.Id;
-                string destination = RecordFolder + "/" + specific + ".txt";
+                string destination = RecordFolder + specific + ".txt";
                 string content = msg.FromUser.FullName + ": 会议开始！！" + "\n";
                 System.IO.File.WriteAllText(@destination, content);
             }
             else
             {
                 int specific = msg.ToRoom.Id;
-                string destination = RecordFolder + "/" + specific + ".txt";
+                string destination = RecordFolder + specific + ".txt";
                 string content = msg.FromUser.FullName + "::" + msg.Content+"\n";
                 System.IO.File.AppendAllText(@destination, content);
             }
@@ -236,14 +240,15 @@ namespace Chat.Web.Controllers
             if (GptSumEnd.Count > 0)
             {
                 int specific = msg.ToRoom.Id;
-                string destinationRecord = RecordFolder + "/" + specific + ".txt";
+                string destinationRecord = RecordFolder + specific + ".txt";
                 string content = msg.FromUser.FullName + ":" + msg.Content;
 
                 //System.IO.File.AppendAllText(@destinationRecord, content);
 
                 string filename = DateTime.Now.ToString("yyyymmddMMss") + "_" + specific + ".txt";
-                string destinationSum = SumFolder + "/" + filename;
-
+                string destinationSum = SumFolder + NowSaveFile + "/" +  filename;
+                if (!Directory.Exists(SumFolder + NowSaveFile))
+                    Directory.CreateDirectory(SumFolder + NowSaveFile);
 
                 string requestStr;
                 requestStr = System.IO.File.ReadAllText(@destinationRecord) + "请总结上面的对话，形成一份会议记录";
@@ -266,7 +271,20 @@ namespace Chat.Web.Controllers
                     string htmlImage = string.Format(
                     "<h1>Sum Files</h1><a href=\"/uploads/SumFolder/{0}\" target=\"_blank\">" +
                     "<img src=\"/uploads/SumFolder/{0}\" class=\"post-image\">" +
-                    "</a>", filename);
+                    "</a>", NowSaveFile + "/" + filename);
+
+                    msg = new Message()
+                    {
+                        Content = Regex.Replace(htmlImage, @"(?i)<(?!img|a|/a|/img).*?>", string.Empty),
+                        Timestamp = DateTime.Now,
+                        FromUser = user,
+                        ToRoom = room
+                    };
+                }
+                else
+                {
+                    string htmlImage = string.Format(
+                    "Sum Failed!!");
 
                     msg = new Message()
                     {
