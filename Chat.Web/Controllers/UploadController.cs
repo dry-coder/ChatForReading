@@ -98,14 +98,14 @@ namespace Chat.Web.Controllers
                 if (extension == ".pdf")
                 {
                     htmlImage = string.Format(
-                    "<h1>PDF Files</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
+                    "<h1>【Files of PDF】" + fileName.ToString() + "</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
                     "<img src=\"/uploads/Files/{0}\" class=\"post-image\">" +
                     "</a>", NowSaveFile + "/" + fileName);
                 }
                 if (extension == ".txt")
                 {
                     htmlImage = string.Format(
-                    "<h1>TXT Files</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
+                    "<h1>【Files of TXT】" + fileName.ToString() + "</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
                     "<img src=\"/uploads/Files/{0}\" class=\"post-image\">" +
                     "</a>", NowSaveFile + "/" + fileName);
 

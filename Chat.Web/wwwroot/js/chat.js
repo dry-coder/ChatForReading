@@ -72,8 +72,8 @@
         self.myProfile = ko.observable();
         self.isLoading = ko.observable(true);
 
-        /*self.chatFiles = ko.observableArray([]);
-        self.chatSums = ko.observableArray([]);*/
+        self.chatFiles = ko.observableArray([]);
+        /*self.chatSums = ko.observableArray([]);*/
 
         self.showAvatar = ko.computed(function () {
             return self.isLoading() == false && self.myProfile().avatar() != null;
@@ -154,7 +154,7 @@
 
                 /* 增加的 */
                 self.fileHistory();
-                self.sumHistory();
+                //self.sumHistory();
             });
         }
 
@@ -243,7 +243,25 @@
         }
 
         /* 此处为新增加的功能，即当前房间的文件列表 */
+        self.fileHistory = function () {
+            fetch('/api/Messages/File/' + viewModel.joinedRoom().name())
+                .then(response => response.json())
+                .then(data => {
+                    self.chatFiles.removeAll();
+                    for (var i = 0; i < data.length; i++) {
+                        var isMine = data[i].fromUserName == self.myProfile().userName();
+                        self.chatFiles.push(new ChatMessage(data[i].id,
+                            data[i].content,
+                            data[i].timestamp,
+                            data[i].fromUserName,
+                            data[i].fromFullName,
+                            isMine,
+                            data[i].avatar))
+                    }
 
+                    $(".messages-container").animate({ scrollTop: $(".messages-container")[0].scrollHeight }, 1000);
+                });
+        }
 
         /* 此处为新增加的功能，即当前房间的各个文件*/
 
