@@ -1,10 +1,15 @@
-Gensoul::@gpt what is justice？[[answer]]:
+Gensoul: 会议开始！！
+Gensoul::我认为正义是客观的，毕竟从朴素的角度来看，确实对于一件事是否正义我们基本能有个共识。
+Thinker::我不这样认为。
+Thinker::我觉得正义应该是主观的，他和每个时代的主体阶层的看法有关。
+Gensoul::@gpt 正义的客观性，主观性。[[answer]]:
 
-Justice is the concept of fairness and equality in the administration of law. It is the ideal of moral rightness based on ethics, rationality, law, natural law, fairness, and equity. Justice is often seen as a form of fairness, as it ensures that all individuals and groups are treated equally and with respect. It is also seen as a form of respect for the rule of law, as it ensures that laws are applied fairly and without bias. Justice is an important concept in many societies, as it is seen as a way to ensure that all individuals and groups are treated fairly and with respect. Justice is also seen as a way to protect the rights of individuals and groups, as well as to ensure that laws are applied fairly and without bias.
-Gensoul::@gpt what is justice?[[answer]]:
+正义的客观性指的是，正义的标准应该是客观的，而不是主观的。它强调的是，正义的标准应该是一致的，不应该受到个人的偏见或偏好的影响。这意味着，正义的标准应该是基于一定的原则，而不是基于个人的情感或偏好。
 
-Justice is the concept of moral rightness based on ethics, rationality, law, natural law, religion, fairness and equity. It is the act of being just and fair. Justice is a concept of moral rightness based on ethics, rationality, law, natural law, religion, fairness and equity. It is the act of being just and fair. Justice is often thought of as the foundation of law and society, and it is the basis of the legal system. It is the idea that people should be treated equally and fairly, and that everyone should have access to the same rights and opportunities. Justice is also seen as a way to ensure that people are treated fairly and equally in all aspects of life, including in the workplace, in the criminal justice system, and in the political system. Justice is also seen as a way to ensure that all people are treated equally and fairly in society, regardless of their race, gender, religion, or other characteristics.
-Gensoul::hello？
-Gensoul::@gpt what is justice?[[answer]]:
+正义的主观性指的是，正义的标准应该是主观的，而不是客观的。它强调的是，正义的标准应该受到个人的偏见或偏好的影响。这意味着，正义的标准应该是基于个人的情感或偏好，而不是基于一定的原则。
 
-Justice is the concept of moral rightness based on ethics, rationality, law, natural law, fairness, and equity. It is the act of being just and fair. Justice is a concept that involves both the punishment of wrongdoing and the protection of the innocent. It is the foundation of a society that is based on the rule of law. Justice is the cornerstone of a society that is based on fairness and equality. It is the basis for a system of laws that protect the rights of all citizens. Justice is the principle that all people should be treated equally and fairly, regardless of their race, gender, religion, or any other factor. It is the idea that all people should have the same rights and opportunities, and that all people should be held accountable for their actions. Justice is the cornerstone of a society that is based on the rule of law and respect for human rights.
+两者之间存在着一定的矛盾，但也可以说，它们都是正义的一部分。客观性和主观性都是正义的重要组成部分，它们都可以为正义提供一定的支持。因此，正义的标准应该是一种综合的标准，既考虑客观性，也考虑主观性。
+Gensoul::看来，正义这个话题并不是我们设想的那样简单。
+Thinker::确实，那就这样。
+Thinker::会议结束了。
+Thinker::@sum_end

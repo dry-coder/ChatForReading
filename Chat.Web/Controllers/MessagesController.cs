@@ -185,7 +185,7 @@ namespace Chat.Web.Controllers
                     .ToList();
 
                 // Build the context from all highly similar documents
-                const int maxChars = 8192;
+                const int maxChars = 4096;
                 var contextBuilder = new StringBuilder();
                 var tokenCount = 0;
 
