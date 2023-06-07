@@ -20,6 +20,11 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 
+using UglyToad.PdfPig;
+using UglyToad.PdfPig.Content;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
+using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
+
 namespace Chat.Web.Controllers
 {
     [Authorize]
@@ -35,7 +40,8 @@ namespace Chat.Web.Controllers
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IFileValidator _fileValidator;
 
-        private const string apiKey = "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";
+        private const string OpenaiApiKeyFileName = "OpenAI-API.key";
+        //private const string apiKey = "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";
         private static OpenAIClient? Api;
         private const string InputsFolder = "wwwroot/uploads/Files/";
         private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings/";
@@ -63,6 +69,10 @@ namespace Chat.Web.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload([FromForm] UploadViewModel viewModel)
         {
+            string apiKey = "";
+            if (System.IO.File.Exists(OpenaiApiKeyFileName))
+                apiKey = System.IO.File.ReadAllText(OpenaiApiKeyFileName);
+
             NowSaveFile = viewModel.RoomId.ToString();
 
             if (ModelState.IsValid)
@@ -101,6 +111,41 @@ namespace Chat.Web.Controllers
                     "<h1>【Files of PDF】" + fileName.ToString() + "</h1><a href=\"/uploads/Files/{0}\" target=\"_blank\">" +
                     "<img src=\"/uploads/Files/{0}\" class=\"post-image\">" +
                     "</a>", NowSaveFile + "/" + fileName);
+
+                    string outFileName = filePath.Replace(".pdf", ".txt");
+                    if (!System.IO.File.Exists(outFileName))
+                        System.IO.File.Delete(outFileName);
+                    using (PdfDocument document = PdfDocument.Open(filePath))
+                    {
+                        StringBuilder extractedText = new StringBuilder();
+
+                        foreach (Page page in document.GetPages())
+                        {
+                            var words = page.GetWords(NearestNeighbourWordExtractor.Instance);
+                            var blocks = RecursiveXYCut.Instance.GetBlocks(words);
+
+                            foreach (var block in blocks)
+                            {
+                                extractedText.AppendLine(block.Text);
+                            }
+                        }
+                        System.IO.File.WriteAllText(outFileName, extractedText.ToString(), Encoding.UTF8);
+                    }
+
+                    Api = new OpenAIClient(apiKey, Model.Ada);
+
+                    // Create directory to store embeddings
+                    Directory.CreateDirectory(EmbeddingsFolder + NowSaveFile);
+
+                    // Get all txt files from the folder
+                    var txtFilesTemp = Directory.GetFiles(InputsFolder + NowSaveFile, fileName.Replace(".pdf", ".txt"));
+
+                    // Process each file
+                    foreach (var filePathTemp in txtFilesTemp)
+                    {
+                        await ProcessFile(filePathTemp, EmbeddingsFolder + NowSaveFile);
+                    }
+
                 }
                 if (extension == ".txt")
                 {
@@ -115,7 +160,7 @@ namespace Chat.Web.Controllers
                     Directory.CreateDirectory(EmbeddingsFolder + NowSaveFile);
 
                     // Get all txt files from the folder
-                    var txtFilesTemp = Directory.GetFiles(InputsFolder + NowSaveFile, "*.txt");
+                    var txtFilesTemp = Directory.GetFiles(InputsFolder + NowSaveFile, fileName);
 
                     // Process each file
                     foreach (var filePathTemp in txtFilesTemp)
@@ -168,7 +213,7 @@ namespace Chat.Web.Controllers
             string filename = Path.GetFileName(filePath);
 
             // Split the input into sections
-            const int maxSectionLength = 2048;
+            const int maxSectionLength = 1024;
             var sections = SplitIntoSections(input, maxSectionLength);
 
             List<object> embeddingsList = new List<object>();

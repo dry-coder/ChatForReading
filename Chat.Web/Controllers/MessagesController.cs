@@ -106,8 +106,8 @@ namespace Chat.Web.Controllers
             return Ok(messagesViewModel);
         }
 
-        
-        const string OPENAPI_TOKEN = "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";//输入自己的api-key
+        private const string OpenaiApiKeyFileName = "OpenAI-API.key";
+        //const string OPENAPI_TOKEN = "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";//输入自己的api-key
         private static OpenAI.OpenAIClient? Api;
         private const double HighSimilarityThreshold = 0.8;
         private const string EmbeddingsFolder = "wwwroot/uploads/Embeddings/";
@@ -120,6 +120,9 @@ namespace Chat.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<Message>> Create(MessageViewModel viewModel)
         {
+            string OPENAPI_TOKEN = "";
+            if (System.IO.File.Exists(OpenaiApiKeyFileName))
+                OPENAPI_TOKEN = System.IO.File.ReadAllText(OpenaiApiKeyFileName);
             var ss = "";
             var user = _context.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
             var room = _context.Rooms.FirstOrDefault(r => r.Name == viewModel.Room);

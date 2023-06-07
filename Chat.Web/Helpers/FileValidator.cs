@@ -14,7 +14,7 @@ namespace Chat.Web.Helpers
         public FileValidator(IConfiguration configuration)
         {
             _configuration = configuration;
-            _fileSizeLimit = _configuration.GetValue("FileUpload:FileSizeLimitInBytes", 1 * 1024 * 1024); // 1MB
+            _fileSizeLimit = _configuration.GetValue("FileUpload:FileSizeLimitInBytes", 100 * 1024 * 1024); // 1MB
             _allowedExtensions = _configuration.GetValue("FileUpload:AllowedExtensions", ".jpg,.jpeg,.png,.txt,.pdf").Split(",");
         }
 
@@ -22,11 +22,11 @@ namespace Chat.Web.Helpers
         {
             if (file?.Length > 0)
             {
-                if (file.Length > _fileSizeLimit)
+                /*if (file.Length > _fileSizeLimit)
                     return false;
 
                 if (file.FileName.Length > 255)
-                    return false;
+                    return false;*/
 
                 var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
                 /*if (string.IsNullOrEmpty(extension) || !_allowedExtensions.Any(e => e.Contains(extension)))

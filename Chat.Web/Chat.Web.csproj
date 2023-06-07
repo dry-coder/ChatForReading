@@ -35,6 +35,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.1" />
     <PackageReference Include="OpenAI-DotNet" Version="4.3.0" />
+    <PackageReference Include="PdfPig" Version="0.1.8" />
   </ItemGroup>
 
   <ItemGroup>
